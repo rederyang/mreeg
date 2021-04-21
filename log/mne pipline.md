@@ -1,0 +1,40 @@
+- 安装
+  - https://mne.tools/stable/install/mne_python.html
+- 新建conda 环境
+  - yml文件
+  - 安装nb_conda_kernels (用以在jupyternotebook中切换虚拟环境) https://blog.csdn.net/sean2100/article/details/83744679
+- 官方demo
+  - https://mne.tools/dev/auto_tutorials/intro/plot_10_overview.html
+  - 中文翻译 https://zhuanlan.zhihu.com/p/113662878
+- 分割结果到BEM
+  - 执行该命令 https://mne.tools/stable/generated/commands.html#mne-watershed-bem
+  - 2种方式：watershed algorithm，flash images
+  - 使用watershed其实还是调用freesurfer，所以需要mne和freesurfer在一个环境中
+  - wsl2图形界面安装（未成功）https://medium.com/@japheth.yates/the-complete-wsl2-gui-setup-2582828f4577
+  - wsl2图形界面安装（未尝试）https://www.iamkyun.com/2020/07/25/WSL2-Ubuntu-GUI/
+  - 所以需要在wsl2中配置mne 环境
+    - 出现问题 网络连接异常，提示000 解决：https://blog.csdn.net/qq_39340602/article/details/105766519
+  - 配置完mne的conda环境后就可以在该环境中使用mne的命令，执行watersheld
+- coregistration （电极配准）（略过，默认为identity）
+- 分割结果+仅包括inner skull的bem到volume based source space
+  - 注意，此步除了要用到T1，还要用到BEM（inner skull）以进行约束
+  - https://mne.tools/stable/auto_tutorials/source-modeling/plot_forward.html?highlight=bem 中间部分 To compute a volume based source space defined with a grid of candidate dipoles inside the brain (requires the [BEM](https://mne.tools/stable/glossary.html#term-BEM) surfaces) you can use the following.
+- 读取数据
+  - 使用的数据 https://mne.tools/stable/auto_tutorials/source-modeling/plot_eeg_no_mri.html#setup-source-space-and-compute-forward
+- 计算fwd solution
+  - 先计算bem model（完整的），再根据data.info，src, bem model和trans计算lead field
+  - make_bem_model 有可能因为inner skull不在内部导致无法进行运算，需要导出obj在blender中进行修改 https://mne.tools/stable/auto_tutorials/source-modeling/plot_fix_bem_in_blender.html?highlight=blender
+  - 涉及的修改的教程 https://www.youtube.com/watch?v=RaT-uG5wgUw&ab_channel=BlenderGuru
+  - data的一些设置参见 https://mne.tools/stable/auto_tutorials/source-modeling/plot_eeg_no_mri.html#setup-source-space-and-compute-forward load data中的模块
+    - clean channel names
+    - 设置montage
+    - set_eeg_reference
+    - 这些设置将更改raw的info
+  - 注意，计算fwd只需要data的info，而不需要data的内容。所以对每一位患者+每一种检测（电极、EEG/MEG等），只需要进行一次fwd solution计算，可以将该结果存下来
+- inverse solution
+  - 在对数据进行解算之前，还要进行的处理： https://mne.tools/stable/auto_tutorials/source-modeling/plot_eeg_mri_coords.html#sphx-glr-auto-tutorials-source-modeling-plot-eeg-mri-coords-py 中间部分
+    - 确定events
+    - epoch化
+    - 计算cov
+  - 由fwd和cov得到invers operator
+  - 对data apply_inverse
